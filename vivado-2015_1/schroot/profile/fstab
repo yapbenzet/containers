@@ -1,0 +1,33 @@
+# fstab: static file system information for chroots.
+# Note that the mount point will be prefixed by the chroot path
+# (CHROOT_PATH)
+#
+# <file system> <mount point>   <type>  <options>       <dump>  <pass>
+
+## root fs ##
+%(DIR)s/files/rootfs.btrfs /  	btrfs    rw         0       0
+
+## bind /proc ##
+/proc           /proc           none    rw,bind         0       0
+
+## /tmp ##
+tmpfs /tmp 		tmpfs defaults,noatime,nosuid,nodev,mode=1777,size=256M 0 0
+
+## /dev ##
+/dev/null       /dev/null       none    rw,bind         0       0
+/dev/zero       /dev/zero       none    rw,bind         0       0
+/dev/urandom       /dev/urandom       none    rw,bind         0       0
+/dev/random       /dev/random       none    rw,bind         0       0
+tmpfs /dev/shm 	tmpfs rw,nosuid,nodev 0 0
+
+## programlar ##
+%(DIR)s/files/vivado-2015_1-zynq-webpack.btrfs /mnt/vivado-2015_1  	btrfs    ro         0       0
+
+## /home ##
+%(DIR)s/files/homedir	/home/sandbox 	none    rw,bind         0       0
+
+# /sys            /sys            none    rw,bind         0       0
+# /dev            /dev            none    rw,bind         0       0
+# /dev/pts        /dev/pts        none    rw,bind         0       0
+# /dev/tty       /dev/tty       none    rw,bind         0       0
+### not: /dev/tty emacs icin gerekli
