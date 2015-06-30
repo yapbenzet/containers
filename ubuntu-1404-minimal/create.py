@@ -2,17 +2,13 @@
 import sys, os, subprocess, glob
 
 def run(cmd):
-    return os.system(cmd) == 0
+    return os.system('bash -c "%s"' % cmd) == 0
 
-def run_chroot(d, cmd):
-    cmd = "chroot %s %s" % (d, cmd)
-    return os.system(cmd) == 0
-
-remove_packages = [
-    "dh-python", "python3.4", "python3.4-minimal", "xkb-data", "netcat-openbsd",
-    "net-tools", "keyboard-configuration", "vim-common", "isc-dhcp-common",
-    "less", "locales", "perl", "mime-support", "eject"
-]
+APT_SOURCES = """
+deb http://archive.ubuntu.com/ubuntu/ trusty main restricted
+deb http://archive.ubuntu.com/ubuntu/ trusty-updates main restricted
+deb http://archive.ubuntu.com/ubuntu/ trusty-security main restricted
+"""
 
 if __name__ == '__main__':
 
@@ -21,23 +17,37 @@ if __name__ == '__main__':
         exit(1)
 
     WORKING_DIR = sys.argv[1]
-    CHROOT_NAME = os.path.basename(os.path.dirname(os.path.abspath(__file__)))
 
+    SOURCE_DIR = os.path.dirname(os.path.abspath(__file__))
+    CHROOT_NAME = os.path.basename(SOURCE_DIR)
     CHROOT_DIR = "%s/%s" % (WORKING_DIR, CHROOT_NAME)
-    runch = lambda x : run_chroot(CHROOT_DIR, x)
 
     run("debootstrap trusty %s http://archive.ubuntu.com/ubuntu/" % CHROOT_DIR)
-
-    runch("apt-get update") or exit(1)
-    runch('bash -c "SUDO_FORCE_REMOVE=yes apt-get -y autoremove --purge sudo"')
-    runch("apt-get -y autoremove --purge %s" % (" ".join(remove_packages)))
-    runch("apt-get clean")
-    runch("find /var -name \"*-old\" -exec rm -f {} \;")
-    runch("rm -rf /var/lib/apt/lists/* /var/log/* /var/cache/apt/*")
-    runch("rm -rf /var/cache/man")
-    runch("rm -rf /usr/share/locales")
-    runch("rm -rf /dev/*")
+    run("rm -rf %s/dev/*" % CHROOT_DIR)
+    run("chroot %s apt-get clean" % CHROOT_DIR)
+    run("rm -rf %s/{var/lib/apt/lists/*,var/log/*,var/cache/apt/*}" % CHROOT_DIR)
+    open("%s/etc/apt/sources.list" % CHROOT_DIR, "w").write(APT_SOURCES)
 
     print "tar started"
-    run("tar -C %s -cJp . > %s/%s.chroot.tar.xz" % (CHROOT_DIR, WORKING_DIR, CHROOT_NAME)) or exit(1)
+    debootstrap_output_tar = "%s/%s.chroot.tar.xz" % (WORKING_DIR, CHROOT_NAME)
+    run("tar -C %s -cJp . > %s" % (CHROOT_DIR, debootstrap_output_tar)) or exit(1)
     run("rm -rf %s" % CHROOT_DIR) or exit(1)
+
+    print "[docker] import %s as %s" % (debootstrap_output_tar, CHROOT_NAME)
+    run("cat %s | docker import - %s" % (debootstrap_output_tar, CHROOT_NAME)) or exit(1)
+
+    print "rm %s" % debootstrap_output_tar
+    run("rm -f %s" % debootstrap_output_tar)
+
+    print "[docker] build %s:update" % CHROOT_NAME
+    run("docker build -t %s:update %s" % (CHROOT_NAME, SOURCE_DIR))
+
+    docker_output_tar = "%s/%s.tar.xz" % (WORKING_DIR, CHROOT_NAME)
+    print "[docker] export %s:update to %s" % (CHROOT_NAME, docker_output_tar)
+    run("docker run --name=tmp-%s %s:update bash" % (CHROOT_NAME, CHROOT_NAME))
+    run("docker export tmp-%s | xz > %s" % (CHROOT_NAME, docker_output_tar))
+
+    print "[docker] rm old %s" % CHROOT_NAME
+    run("docker rm tmp-%s" % CHROOT_NAME)
+    run("docker rmi %s:update" % CHROOT_NAME)
+    run("docker rm %s" % CHROOT_NAME)
