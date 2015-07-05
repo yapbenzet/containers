@@ -50,4 +50,4 @@ if __name__ == '__main__':
     print "[docker] rm old %s" % CHROOT_NAME
     run("docker rm tmp-%s" % CHROOT_NAME)
     run("docker rmi %s:update" % CHROOT_NAME)
-    run("docker rm %s" % CHROOT_NAME)
+    run("docker rmi %s" % CHROOT_NAME)
