@@ -13,8 +13,8 @@ if __name__ == '__main__':
     run("python %s/ubuntu-1404-minimal/create.py %s" % (path, WORKING_DIR)) or exit(1)
     run("cat %s/ubuntu-1404-minimal.tar.xz | docker import - ubuntu-1404-minimal" % WORKING_DIR) or exit(1)
 
-    run("docker build -t vivado-2015_1 %s/vivado-2015_1/" % path) or exit(1)
+    run("docker build -t vivado-ubuntu %s/vivado-ubuntu/" % path) or exit(1)
     print "build completed"
 
     print "saving to %s/docker_containers.tar.xz" % WORKING_DIR
-    run("docker save ubuntu-1404-minimal vivado-2015_1 | xz > %s/docker_containers.tar.xz" % WORKING_DIR)
+    run("docker save ubuntu-1404-minimal vivado-ubuntu | xz > %s/docker_containers.tar.xz" % WORKING_DIR)
