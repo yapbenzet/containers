@@ -1,5 +1,8 @@
 FROM vivado-ubuntu1404
 
+USER root
+ENV HOME /root
+
 RUN apt-get update ; \
 	apt-get install -y --no-install-recommends --no-install-suggests openssh-server ; \
 	sed -i 's/UsePAM yes/UsePAM no/' /etc/ssh/sshd_config ; \
@@ -11,13 +14,13 @@ RUN apt-get update ; \
 	rm -rf /var/cache/man ; \
 	rm -rf /usr/share/locales ; \
 	\
+	/etc/init.d/ssh start ; \
+	\
 	echo "if [ -f ~/.bashrc ]; then . ~/.bashrc fi" > /home/sandbox/.bash_profile ; \
 	mkdir -p /home/sandbox/.ssh ; \
 	chown ${uid}:${gid} -R /home/sandbox ; \
-	\
+	cd /home/sandbox ;
 
-USER sandbox
-ENV HOME /home/sandbox
 CMD bash
 
 #
