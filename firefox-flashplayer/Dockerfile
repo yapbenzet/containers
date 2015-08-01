@@ -1,4 +1,4 @@
-FROM ubuntu-1404-minimal
+FROM ubuntu:14.04
 
 RUN \
 	echo "deb http://archive.ubuntu.com/ubuntu/ trusty multiverse" > /etc/apt/sources.list.d/multiverse.list ; \

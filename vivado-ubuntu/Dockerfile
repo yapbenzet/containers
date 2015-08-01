@@ -4,8 +4,6 @@ RUN apt-get update ; \
 	apt-get install -y --no-install-recommends --no-install-suggests libgtk2.0-0 libxtst6 ; \
 	apt-get install -y --no-install-recommends --no-install-suggests make gcc libc-dev ; \
 	\
-	apt-get install -y --no-install-recommends --no-install-suggests ssh ; \
-	\
 	dpkg --add-architecture i386; apt-get update ; \
 	apt-get install -y --no-install-recommends --no-install-suggests libc6:i386 libstdc++6:i386 fontconfig:i386 libxtst6:i386 libxrender1:i386 libglib2.0-0:i386 libsm6:i386 libxi6:i386 ; \
 	\
