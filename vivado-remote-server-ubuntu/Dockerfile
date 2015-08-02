@@ -1,4 +1,4 @@
-FROM vivado-ubuntu1404
+FROM vivado-ubuntu
 
 USER root
 ENV HOME /root
@@ -12,6 +12,8 @@ RUN apt-get update ; \
 	find /var -name "*-old" -exec rm -f {} \; ; \
 	rm -rf /var/lib/apt/lists/* /var/log/* /var/cache/apt/* ; \
 	rm -rf /var/cache/man ; \
-	rm -rf /usr/share/locales ;
+	rm -rf /usr/share/locales ; \
+	\
+	mkdir /var/run/sshd ;
 
-CMD bash
+CMD /usr/sbin/sshd -D

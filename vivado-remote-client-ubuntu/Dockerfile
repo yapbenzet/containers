@@ -1,4 +1,4 @@
-FROM vivado-ubuntu1404
+FROM vivado-ubuntu
 
 USER root
 ENV HOME /root
