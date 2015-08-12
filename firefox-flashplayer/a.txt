@@ -1,4 +1,0 @@
-/taner/mnt/owncloud
-/taner/mnt/eski-dosyalar
-/taner/mnt/media/music
-/taner/mnt/eski-kodlar
