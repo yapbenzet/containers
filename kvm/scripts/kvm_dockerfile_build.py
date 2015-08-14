@@ -109,10 +109,10 @@ class DockerBuildKvm:
 
     def DEBOOTSTRAP(self, suite, mirror):
         DIR = self.DIR
-        # self.create_image()
+        self.create_image()
         self.mount()
 
-        # sh << "debootstrap %(suite)s %(DIR)s %(mirror)s" > None
+        sh << "debootstrap %(suite)s %(DIR)s %(mirror)s" > None
 
         sh << "cp -rf kvm_dockerfile_build.files/entry_point/serial-getty@ttyS0.service.d/ %(DIR)s/etc/systemd/system/" > None
         assert sh.r == 0
