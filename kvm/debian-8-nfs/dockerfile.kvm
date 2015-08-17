@@ -3,4 +3,16 @@ DEBOOTSTRAP jessie http://ftp.nl.debian.org/debian/
 RUN apt-get update ; \
 	apt-get -y install linux-image-amd64 ;
 
-RUN apt-get -y install nfs-kernel-server ;
+RUN apt-get -y install nfs-kernel-server ; \
+	\
+	mkdir -p /nfs ; \
+	echo "/nfs 127.0.0.1/255.255.255.255(rw,no_subtree_check)" >> /etc/exports; \
+	echo 'RPCMOUNTDOPTS="$RPCMOUNTDOPTS -p 4002 -o 4003"' >> /etc/default/nfs-kernel-server ; \
+	\
+	apt-get clean ; \
+	find /var -name "*-old" -exec rm -f {} \; ; \
+	rm -rf /var/lib/apt/lists/* /var/cache/apt/* ;
+
+
+# tcp ports: 111 2049 4002
+# udp ports: 111 2049 4002

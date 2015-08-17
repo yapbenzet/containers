@@ -62,7 +62,7 @@ class DockerBuildKvm:
 
         self.mount()
 
-        sh << "cp -rf files/entry_point/serial-getty@ttyS0.service.d/ %(DIR)s/etc/systemd/system/" > None
+        sh << "cp -rf kvm_dockerfile_build.files/entry_point/serial-getty@ttyS0.service.d/ %(DIR)s/etc/systemd/system/" > None
 
         open("%s/entry_point.sh" % DIR, "w").write(
             "#!/bin/bash\n%(cmd)s\necho -n '%(cmd_hash)s' > /entry_point.last_run\npoweroff"
@@ -135,6 +135,12 @@ class DockerBuildKvm:
                 f = self.functions[cmd[0]]
                 cmd_params = cmd[1]
                 f(cmd_params)
+
+        self.mount()
+        DIR = self.DIR
+        open("%s/entry_point.sh" % DIR, "w").write("#!/bin/bash\nexec /bin/bash")
+        sh << "chmod +x %(DIR)s/entry_point.sh" > None
+        self.umount()
 
 
 if __name__ == '__main__':
