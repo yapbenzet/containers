@@ -1,12 +1,15 @@
+#FS_FILE_FORMAT btrfs
+#FS_FILE_MOUNT_FLAGS compress-force=zlib
+
 DEBOOTSTRAP jessie http://ftp.nl.debian.org/debian/
 
 RUN apt-get update ; \
-	apt-get -y install linux-image-amd64 ;
+	apt-get -y install --no-install-recommends linux-image-amd64 ;
 
-RUN apt-get -y install nfs-kernel-server ; \
+RUN apt-get -y install --no-install-recommends nfs-kernel-server ; \
 	\
 	mkdir -p /nfs ; \
-	echo "/nfs 127.0.0.1/255.255.255.255(rw,no_subtree_check)" >> /etc/exports; \
+	echo "/nfs 10.0.2.0/255.255.255.0(rw,no_subtree_check,no_root_squash,sync)" >> /etc/exports; \
 	echo 'RPCMOUNTDOPTS="$RPCMOUNTDOPTS -p 4002 -o 4003"' >> /etc/default/nfs-kernel-server ; \
 	\
 	apt-get clean ; \

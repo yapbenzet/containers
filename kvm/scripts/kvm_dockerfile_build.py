@@ -16,17 +16,27 @@ def parse_dockerfile(dockerfile_str):
     for line in dockerfile_str.split('\n'):
         if line == "":
             continue
-        TYPE = line[:line.find(' ')]
-        CMD = line[len(TYPE)+1:]
+        pos = line.find(' ')
+        if pos < 0:
+            TYPE = line
+            CMD = ""
+        else:
+            TYPE = line[:pos]
+            CMD = line[len(TYPE)+1:]
+
         commands.append((TYPE, CMD))
     return commands
 
 class DockerBuildKvm:
 
     def __init__(self, FS_FILE, FS_FILE_SIZE, HOST_KERNEL_PARAMETERS=""):
+        self.image_created = False
         self.FS_FILE = FS_FILE
         self.FS_FILE_SIZE = FS_FILE_SIZE
+        self.FS_FILE_FORMAT = "ext2"
+        self.FS_FILE_MOUNT_FLAGS=""
         self.HOST_KERNEL_PARAMETERS = HOST_KERNEL_PARAMETERS
+        self.KERNEL_PARAMETERS = ""
         self.DIR = "%s.dockerbuild-kvm" % self.FS_FILE
 
         self.functions = {
@@ -40,6 +50,8 @@ class DockerBuildKvm:
             options = "-o ro"
         else:
             options = "-o rw"
+        if self.FS_FILE_MOUNT_FLAGS != "":
+            options += ",%s" % self.FS_FILE_MOUNT_FLAGS
         fsimg.mount(self.FS_FILE, self.DIR, options=options)
 
     def umount(self):
@@ -73,7 +85,9 @@ class DockerBuildKvm:
         vm_kernel_list = sh << "find %(DIR)s/boot -name 'vmlinuz-*'" > str
         vm_initrd_list = sh << "find %(DIR)s/boot -name 'initrd.img-*'" > str
 
-        kernel_parameters = ""
+        kernel_parameters = "%s" % self.KERNEL_PARAMETERS
+        if self.FS_FILE_MOUNT_FLAGS != "":
+            kernel_parameters += " rootflags=%s" % self.FS_FILE_MOUNT_FLAGS
         if vm_kernel_list != "":
             kernel = vm_kernel_list.split('\n')[0]
         else:
@@ -105,7 +119,7 @@ class DockerBuildKvm:
 
 
     def create_image(self):
-        fsimg.create(self.FS_FILE, self.FS_FILE_SIZE, "ext2")
+        fsimg.create(self.FS_FILE, self.FS_FILE_SIZE, self.FS_FILE_FORMAT)
 
     def DEBOOTSTRAP(self, suite, mirror):
         DIR = self.DIR
@@ -121,12 +135,29 @@ class DockerBuildKvm:
         open("%s/build_stage.txt" % DIR, "w").write("0")
 
         self.umount()
+        self.image_created = True
 
     def build(self, file_str):
+
         for cmd_no, cmd in enumerate(parse_dockerfile(file_str)):
             print self.functions
-            print cmd[0], cmd[0] in self.functions
-            if cmd[0][0] == '#':
+            print "cmd:", cmd[0]
+            print "parameters:", cmd[1]
+            if cmd[0] == "#EXIT":
+                print "EXIT command"
+                exit(0)
+            elif cmd[0] == "#FS_FILE_FORMAT":
+                assert not self.image_created
+                assert cmd[1] != "" and cmd[1] in ('ext2', 'ext3', 'ext4', 'btrfs')
+                print "fs file format: %s" % cmd[1]
+                self.FS_FILE_FORMAT = cmd[1]
+            elif cmd[0] == "#FS_FILE_MOUNT_FLAGS":
+                self.FS_FILE_MOUNT_FLAGS = cmd[1]
+                print "fs file mount flags: %s" % cmd[1]
+            elif cmd[0] == "#ADD_KERNEL_PARAMETER":
+                print "add kernel parameter: %s" % cmd[1]
+                self.KERNEL_PARAMETERS += " %s " % cmd[1]
+            elif cmd[0][0] == '#':
                 pass
             elif cmd[0] not in self.functions:
                 print "command not supperted: %s" % cmd[0]
