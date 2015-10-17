@@ -8,9 +8,10 @@ RUN \
 	dpkg --add-architecture i386; apt-get update ; \
 	apt-get install -y --no-install-recommends --no-install-suggests libc6:i386 libstdc++6:i386 fontconfig:i386 libxtst6:i386 libxrender1:i386 libglib2.0-0:i386 libsm6:i386 libxi6:i386 ; \
 	\
-	apt-get install -y --no-install-recommends --no-install-suggests python2.7 ; \
+	apt-get install -y --no-install-recommends --no-install-suggests python python2.7 ; \
 	apt-get install -y --no-install-recommends --no-install-suggests libsm6 ; \
 	apt-get install -y --no-install-recommends --no-install-suggests bc ; \
+	apt-get install -y --no-install-recommends --no-install-suggests strace ; \
 	\
 	apt-get clean ; \
 	find /var -name "*-old" -exec rm -f {} \; ; \
@@ -37,3 +38,5 @@ CMD bash
 # ise : libsm6, gmake
 # docnav : libc6:i386 libstdc++6:i386 fontconfig:i386 libxtst6:i386 libxrender1:i386 libglib2.0-0:i386 libsm6:i386 libxi6:i386
 # reconos kernel compile: bc
+
+# xstcache : strace
