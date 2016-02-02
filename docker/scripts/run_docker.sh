@@ -13,15 +13,16 @@ error() {
 [ -d "${WORKING_DIR}" ] || error "working directory not found"
 [ "${CONTAINER}" != "" ] || error "CONTAINER variable empty"
 
+[ "$(realpath ${WORKING_DIR})" != "/" ] || error "working directory is /"
+
 HOME_DIR=${WORKING_DIR}/home
 clean() {
 	rm -rf ${WORKING_DIR}/tmp/*
 	if [ "$TMP_HOME_SIZE" != "" ]; then
-		sudo /taner/scripts/tmpfs_compressed.py umount $HOME_DIR
+		tmpfs_compressed.py umount $HOME_DIR
 	fi
 
 	umountlist $WORKING_DIR | sh
-
 
 	if [ "$ENABLE_AUDIO" == "true" ]; then
 		sudo -u $HOST_USER -- bash -c "\
@@ -57,7 +58,7 @@ create_tmp_dir() {
 create_home_dir() {
 	mkdir -p $HOME_DIR || exit
 	if [ "$TMP_HOME_SIZE" != "" ]; then
-		/taner/scripts/tmpfs_compressed.py mount $HOME_DIR $TMP_HOME_SIZE || exit
+		tmpfs_compressed.py mount $HOME_DIR $TMP_HOME_SIZE || exit
 	fi
 	chown -R $PARAM_USER $HOME_DIR
 }
@@ -85,11 +86,55 @@ audio_config() {
 	fi
 }
 
+mount_config() {
+
+	PARAM_MOUNTS=""
+	if [ "MOUNT_LIST" != "" ]; then
+		for mnt in "${MOUNT_LIST[@]}"; do
+			IFS=':' read -ra MNT <<< "$mnt"
+			mount_dir=${WORKING_DIR}/${MNT[1]}
+			mount_parameters=${MNT[2]}
+			mount_device=${MNT[0]}
+
+			echo "mounting ${MNT[1]} ( $mount_device )"
+
+			mkdir -p $mount_dir
+			mount -o $mount_parameters $mount_device ${WORKING_DIR}/${MNT[1]}
+			PARAM_MOUNTS="$PARAM_MOUNTS -v $mount_dir:${MNT[1]}"
+		done
+	fi
+
+}
+
+get_usb_device_path() {
+	vendor_product=$1
+	device_list=`lsusb -d $vendor_product`
+	[ "$device_list" != "" ] || error "usb device $vendor_product not found"
+	[ "$(wc -l <<< $device_list)" == "1" ] || error "usb device $vendor_product count != 1"
+	bus=$(cut -d ' ' -f 2 <<< $device_list)
+	devnum=$(cut -d ' ' -f 4 <<< $device_list)
+	echo "/dev/bus/usb/$bus/${devnum::-1}"
+	exit 0
+}
+
+devices_config() {
+	for DEVICE_ID in "${ADD_DEVICE_WITH_VENDOR_PRODUCT_ID[@]}"; do
+		device=$(get_usb_device_path ${DEVICE_ID})
+		if [ "$?" == "0" ]; then
+			PARAM_DEVICES="${PARAM_DEVICES} --device=$device"
+		else
+			echo "[WARNING] ${DEVICE_ID} device not found"
+		fi
+	done
+}
+
 start() {
 	create_tmp_dir
 	create_home_dir
+	mount_config
 	display_config
 	audio_config
+	devices_config
 
 	[ "$PARAM_PORTS" == "" ] || echo "[PORTS] $PARAM_PORTS"
 	[ "$PARAM_DEVICES" == "" ] || echo "[DEVICES] $PARAM_DEVICES"
@@ -111,6 +156,7 @@ start() {
 		   $PARAM_X_DISPLAY \
 		   $PARAM_AUDIO \
 		   $PARAM_OTHER \
+		   $PARAM_MOUNTS \
 		   -it $CONTAINER \
 		   bash
 }
