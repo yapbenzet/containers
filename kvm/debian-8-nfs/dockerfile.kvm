@@ -1,7 +1,7 @@
 #FS_FILE_FORMAT btrfs
 #FS_FILE_MOUNT_FLAGS compress-force=zlib
 
-DEBOOTSTRAP jessie http://ftp.nl.debian.org/debian/
+DEBOOTSTRAP jessie ftp://ftp2.de.debian.org/debian/
 
 RUN apt-get update ; \
 	apt-get -y install --no-install-recommends linux-image-amd64 ;

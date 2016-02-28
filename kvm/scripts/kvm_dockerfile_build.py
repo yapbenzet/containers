@@ -2,7 +2,7 @@
 import sys, os
 import hashlib
 
-sys.path.append("/taner/scripts/lib/")
+sys.path.append("/usr/local/lib/taner/")
 from ipcsh import ipcsh as sh
 import fsimg
 from util import check_command, exit_error

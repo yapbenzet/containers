@@ -1,0 +1,17 @@
+#FS_FILE_FORMAT btrfs
+#FS_FILE_MOUNT_FLAGS compress-force=zlib
+
+DEBOOTSTRAP jessie ftp://ftp2.de.debian.org/debian/
+
+# install kernel
+RUN apt-get update ; \
+	apt-get -y install --no-install-recommends linux-image-amd64 ;
+
+# install programs
+RUN apt-get update ; \
+	apt-get -y install --no-install-recommends nfs-kernel-server ;
+
+# clean
+RUN apt-get clean ; \
+	find /var -name "*-old" -exec rm -f {} \; ; \
+	rm -rf /var/lib/apt/lists/* /var/cache/apt/* ;
