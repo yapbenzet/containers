@@ -17,6 +17,8 @@ error() {
 
 HOME_DIR=${WORKING_DIR}/home
 clean() {
+	docker kill "${CONTAINER}_$$" &> /dev/null
+	docker rm "${CONTAINER}_$$" &> /dev/null
 	rm -rf ${WORKING_DIR}/tmp/*
 	if [ "$TMP_HOME_SIZE" != "" ]; then
 		tmpfs_compressed.py umount $HOME_DIR
@@ -91,7 +93,7 @@ mount_config() {
 	PARAM_MOUNTS=""
 	if [ "MOUNT_LIST" != "" ]; then
 		for mnt in "${MOUNT_LIST[@]}"; do
-			IFS=':' read -ra MNT <<< "$mnt"
+			IFS=';' read -ra MNT <<< "$mnt"
 			mount_dir=${WORKING_DIR}/${MNT[1]}
 			mount_parameters=${MNT[2]}
 			mount_device=${MNT[0]}
@@ -146,7 +148,7 @@ start() {
 		sudo -u $PARAM_USER HOME_DIR=$HOME_DIR -- bash ${SOURCE_FILE}.startup
 	fi
 
-	docker run --rm \
+	docker run --rm --name="${CONTAINER}_$$" \
 		   --read-only=$PARAM_RO \
 		   -u $PARAM_USER \
 		   -v ${WORKING_DIR}/tmp:/tmp \

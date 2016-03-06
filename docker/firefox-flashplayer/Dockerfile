@@ -1,9 +1,10 @@
 FROM ubuntu:14.04
 
 RUN \
-	echo "deb http://archive.ubuntu.com/ubuntu/ trusty multiverse" > /etc/apt/sources.list.d/multiverse.list ; \
-	echo "deb http://archive.ubuntu.com/ubuntu/ trusty-updates multiverse" >> /etc/apt/sources.list.d/multiverse.list ; \
-	echo "deb http://archive.ubuntu.com/ubuntu/ trusty-security multiverse" >> /etc/apt/sources.list.d/multiverse.list ; \
+	sed -i 's/archive./cz.archive./g' /etc/apt/sources.list ; \
+	echo "deb http://cz.archive.ubuntu.com/ubuntu/ trusty multiverse" > /etc/apt/sources.list.d/multiverse.list ; \
+	echo "deb http://cz.archive.ubuntu.com/ubuntu/ trusty-updates multiverse" >> /etc/apt/sources.list.d/multiverse.list ; \
+	echo "deb http://cz.archive.ubuntu.com/ubuntu/ trusty-security multiverse" >> /etc/apt/sources.list.d/multiverse.list ; \
 	\
 	apt-get update ; \
 	apt-get -y install --no-install-recommends --no-install-suggests firefox flashplugin-installer ; \
