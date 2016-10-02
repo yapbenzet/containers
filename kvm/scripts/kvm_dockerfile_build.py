@@ -140,7 +140,6 @@ class DockerBuildKvm:
     def build(self, file_str):
 
         for cmd_no, cmd in enumerate(parse_dockerfile(file_str)):
-            print self.functions
             print "cmd:", cmd[0]
             print "parameters:", cmd[1]
             if cmd[0] == "#EXIT":

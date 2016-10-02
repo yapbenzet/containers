@@ -44,6 +44,17 @@ if [ "$PARAM_RO" == "" ]; then
 	PARAM_RO=true
 fi
 
+if [ "$NAME" == "" ]; then
+	NAME="${CONTAINER}_$$"
+fi
+
+if [ "$REMOVE_CONTAINER" == "" ]; then
+	PARAM_RM=--rm
+else
+	PARAM_RM=
+fi
+
+
 create_tmp_dir() {
 	rm -rf ${WORKING_DIR}/tmp
 	mkdir -p ${WORKING_DIR}/tmp
@@ -143,12 +154,13 @@ start() {
 	[ "$PARAM_X_DISPLAY" == "" ] || echo "[DISPLAY] enabled"
 	[ "$PARAM_AUDIO" == "" ] || echo "[AUDIO] enabled"
 	[ "$PARAM_OTHER" == "" ] || echo "[PARAMETERS] $PARAM_OTHER"
+	[ "$PARAM_RM" == "" ] || echo "[RM] $PARAM_RM"
 
 	if [ -f "${SOURCE_FILE}.startup" ]; then
 		sudo -u $PARAM_USER HOME_DIR=$HOME_DIR -- bash ${SOURCE_FILE}.startup
 	fi
 
-	docker run --rm --name="${CONTAINER}_$$" \
+	docker run $PARAM_RM --name=$NAME \
 		   --read-only=$PARAM_RO \
 		   -u $PARAM_USER \
 		   -v ${WORKING_DIR}/tmp:/tmp \
