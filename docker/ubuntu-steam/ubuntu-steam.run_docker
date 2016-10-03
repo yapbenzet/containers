@@ -1,0 +1,21 @@
+WORKING_DIR="[ubuntu-steam-wd]"
+CONTAINER=ubuntu-steam
+TMP_SIZE=768M
+
+# MOUNT_LIST=( "[DEVICE];[MOUNT_POINT];[ro/rw]", "[DEVICE];[MOUNT_POINT];[ro/rw]", ... )
+MOUNT_LIST=()
+
+ENABLE_AUDIO=true
+ENABLE_DISPLAY=true
+# DISPLAY_NO=:0
+
+# ADD_DEVICE_WITH_VENDOR_PRODUCT_ID=( "1234:5678", "1111:2222" )
+ADD_DEVICE_WITH_VENDOR_PRODUCT_ID=()
+
+# PARAM_DEVICES="..." (example : "--device=/dev/dri/card0" )
+PARAM_DEVICES="--device=/dev/dri/card0"
+# PARAM_NAME="..."  (default : ${CONTAINER}_PID)
+# PARAM_PORTS="..."  (example:"-p 127.0.0.1:8000:8000")
+# REMOVE_CONTAINER="true" / "false"  (default true)
+PARAM_OTHER="-e SHELL=/bin/bash"
+# PARAM_USER="[in docker user name]" (default sandbox)
