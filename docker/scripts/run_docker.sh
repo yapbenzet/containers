@@ -4,6 +4,14 @@ source default.conf
 SOURCE_FILE=$1
 source $SOURCE_FILE
 
+if [ "$2" != "" ]; then
+	HOST_USER=$2
+fi
+
+if [ "$SANDBOX_USER" == "" ]; then
+	SANDBOX_USER=sandbox
+fi
+
 error() {
 	echo $1
 	exit 1
@@ -44,14 +52,14 @@ if [ "$PARAM_RO" == "" ]; then
 	PARAM_RO=true
 fi
 
-if [ "$NAME" == "" ]; then
-	NAME="${CONTAINER}_$$"
+if [ "$PARAM_NAME" == "" ]; then
+	PARAM_NAME="${CONTAINER}_$$"
 fi
 
-if [ "$REMOVE_CONTAINER" == "" ]; then
-	PARAM_RM=--rm
-else
+if [ "$REMOVE_CONTAINER" == "false" ]; then
 	PARAM_RM=
+else
+	PARAM_RM=--rm
 fi
 
 
@@ -160,7 +168,7 @@ start() {
 		sudo -u $PARAM_USER HOME_DIR=$HOME_DIR -- bash ${SOURCE_FILE}.startup
 	fi
 
-	docker run $PARAM_RM --name=$NAME \
+	docker run $PARAM_RM --name=$PARAM_NAME \
 		   --read-only=$PARAM_RO \
 		   -u $PARAM_USER \
 		   -v ${WORKING_DIR}/tmp:/tmp \
