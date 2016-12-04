@@ -1,16 +1,7 @@
-
-## add user ##
-useradd -ms /bin/bash tmpuser && \
-chmod 0660 /etc/sudoers && \
-echo "tmpuser ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers && \
-chmod 0440 /etc/sudoers && \
-usermod -aG video tmpuser
-
-export HOME=/home/root
-sudo chown tmpuser:tmpuser $HOME
-sudo -u tmpuser bash
-cd ~
-
+## add sandbox to sudoers ##
+chmod 0660 /etc/sudoers ; \
+echo "sandbox ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers ; \
+chmod 0440 /etc/sudoers
 
 
 ## activate ##
@@ -18,12 +9,3 @@ mkdir -p ~/.local/share/unity3d/Unity
 mkdir -p ~/.cache/unity3d
 mkdir -p ~/.config/unity3d/Preferences
 sudo /opt/Unity/Editor/Unity
-
-
-## remove user ##
-exit
-userdel -r tmpuser
-mv /etc/sudoers /etc/sudoers.bak
-cat /etc/sudoers.bak | grep -v tmpuser > /etc/sudoers
-chmod 440 /etc/sudoers
-rm /etc/sudoers.bak

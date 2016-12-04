@@ -1,15 +1,14 @@
-## https://forum.unity3d.com/threads/unity-on-linux-release-notes-and-known-issues.350256/#post-2429209
-
 FROM ubuntu:14.04
 
-WORKDIR unity3d
-ADD unity-editor-5.3.5f1+20160525_amd64.deb unity3d.deb
+WORKDIR /tmp/unity-editor
+ADD unity-editor.deb unity-editor.deb
 
 RUN apt-get update; \
-	dpkg -i unity3d.deb || apt-get -f install -y ; \
-	dpkg -i unity3d.deb ; \
+	apt-get install -y realpath ; \
+	dpkg -i unity-editor.deb || apt-get -f install -y ; \
+	dpkg -i unity-editor.deb ; \
 	apt-get clean ; \
-	rm unity3d.deb ; \
+	rm unity-editor.deb ; \
 	\
 	mkdir -p /usr/share/icons/hicolor && \
 	apt-get update && apt-get install -y \
@@ -63,6 +62,16 @@ ADD google-chrome-stable_current_amd64.deb /tmp/google-chrome.deb
 RUN \
 	dpkg -i /tmp/google-chrome.deb ; \
 	rm -f /tmp/google-chrome.deb ; \
+	apt-get clean ; \
+	find /var -name "*-old" -exec rm -f {} \; ; \
+	rm -rf /var/lib/apt/lists/* /var/log/* /var/cache/apt/* ; \
+	rm -rf /var/cache/man ; \
+	rm -rf /usr/share/locales ;
+
+## other programs
+RUN \
+	apt-get update ; \
+	apt-get -y install --no-install-recommends thunar gnome-icon-theme-full ; \
 	apt-get clean ; \
 	find /var -name "*-old" -exec rm -f {} \; ; \
 	rm -rf /var/lib/apt/lists/* /var/log/* /var/cache/apt/* ; \
